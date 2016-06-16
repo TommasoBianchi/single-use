@@ -4,47 +4,40 @@
  *	It will take in a query string and return either the file, 
  *	or failure
  *
- *	Expects: download.php?key1234567890
+ *	Expects: download.php?3764dfh3475hd6j23d4x
  */
  
 	include("variables.php");
+	include("dbconnect.php");
 	
 	// The input string
-	$key = trim($_SERVER['QUERY_STRING']);
+	$key = mysql_real_escape_string (trim($_SERVER['QUERY_STRING']));
 	
-	/*
-	 *	Retrive the keys
-	 */
-	$keys = file('keys/keys');
 	$match = false;
-	
-	/*
-	 *	Loop through the keys to find a match
-	 *	When the match is found, remove it
-	 */
-	foreach($keys as &$one) {
-		if(rtrim($one)==$key) {
-			$match = true;
-			$one = '';
-		}
-	}
-	
-	/*
-	 *	Puts the remaining keys back into the file
-	 */
-	file_put_contents('keys/keys',$keys);
+    
+    $query = "SELECT * FROM `_table` AS D WHERE D.key = '{$key}'"; // replace _table with your actual db table
+    $result = mysql_query($query);
+    $data = mysql_fetch_array($result);
+    if($data['valid'] == 1 && date('Y-m-d H:i:s') < $data['expire'])
+    {
+        $match = true;
+        $data['num'] = $data['num'] - 1;
+        if($data['num'] <= 0)
+        	$data['valid'] = 0;
+        $query = "UPDATE `_table` AS D SET D.valid = {$data['valid']}, D.num = {$data['num']} WHERE D.id = {$data['id']}"; // replace _table with your actual db table
+    }
 	
 	/*
 	 * If we found a match
 	 */
-	if($match !== false) {
+	if($match !== false && file_exists($data['path'])) {
 		
 		/*
 		 *	Forces the browser to download a new file
 		 */
 		$contenttype = CONTENT_TYPE;
 		$filename = SUGGESTED_FILENAME;
-		$file = PROTECTED_DOWNLOAD;
+		$file = $data['path'];
 		set_time_limit(0);
 		header("Content-Description: File Transfer");
 		header("Content-type: {$contenttype}");
@@ -52,7 +45,10 @@
 		header("Content-Length: " . filesize($file));
 		header('Pragma: public');
 		header("Expires: 0");
-		readfile($file);
+		$download = readfile($file);
+        
+        if($download !== false)
+        	mysql_query($query);
 		
 		// Exit
 		exit;
@@ -64,15 +60,30 @@
 	 *	OR the link expired
 	 *	OR the file has been downloaded already
 	 */
+     
+       if(mysql_num_rows($result) == 0)
+          $error = "Key not found";
+       else if (date('Y-m-d H:i:s') >= $data['expire'])
+          $error = "Key expired";
+       else if($data['valid'] == 0)
+          $error = "Key no longer valid";
+       else if(!file_exists($data['path']))
+          $error = "File not found";
+       else
+          $error = "Unknown error, please report to system administrator";
 
 ?>
 
 <html>
 	<head>
-		<title>Download expired</title>
+		<title>Download failed</title>
+        
 	</head>
 	<body>
-		<h1>Download expired</h1>
+		<div id="page">
+	        	<header class="site-header"><p class="logo-title">Download failed</p></header>
+	        	<p id="content"><?php echo $error ?></p>
+        	</div>
 	</body>
 </html>
 
