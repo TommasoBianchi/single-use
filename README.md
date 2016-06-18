@@ -1,7 +1,7 @@
 # Single use download script
 
 ## Demo
-[http://cloud.joshpangell.com/singleuse](http://cloud.joshpangell.com/singleuse)
+[https://tommasobianchi.github.io/single-use/](https://tommasobianchi.github.io/single-use/)
 
 ## Brief
 
