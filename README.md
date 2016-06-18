@@ -5,11 +5,11 @@
 
 ## Brief
 
-This script was written to be a very easy way for non-programmers to be able to create a secure way to share a single file. It is ideal for bands looking to give a single song to a single person, and invalidating the link once the song has been downloaded. However, it will work for any type of file.
+The original script (by joshpangell) was written to be a very easy way for non-programmers to be able to create a secure way to share a single file, like for bands looking to give a single song to a single person, and invalidating the link once the song has been downloaded (it will work for any type of file). This is an enhanced version that requires a little longer setup but that gives the possibility to have different keys pointing at different files, a more solid approach to invalid keys after an expiration time and more options while generating keys.
 
 ## Description
 
-This script allows you to generate a unique link to download a file. This file will only be allowed to download one time. This link will also have also have an expiration date set on it.
+This script allows you to generate a unique key to download a file. This file will only be allowed to download a fixed amount of times. This key will also have an expiration date set on it.
 
 For instance, if you wanted to sell a song for your band. You sold the song on your website for $1, you could use this script to allow that person to download your song only one time. It would only give them a limited number of hours/days/weeks/years to claim their download.
 
@@ -26,25 +26,10 @@ This directory's permissions MUST be `chmod 755`
 
 The directory called `secret` must also have the same permissions set as the parent directory. 
 
-You will need to modify the `variables.php` file and set your file specific info.
+You will need to modify the `variables.php` file to set your file specific info and the `dbconnect.php` to setup the connection with your own database.
 
-	// The actual file (path starts from this directory forward)
- 	define('PROTECTED_DOWNLOAD','secret/friday.zip');
- 	
- 	// The path to the download.php file (probably same dir as this file)
- 	define('DOWNLOAD_PATH','/singleuse/download.php');
-	
-	// What the file will be displayed to users as
-	define('SUGGESTED_FILENAME','best-song-evar.zip');
-	
-	// The admin password to generate a new download link
-	define('ADMIN_PASSWORD','1234');
-	
-	// The expiration date of the link (examples: +1 year, +5 days, +13 hours)
-	define('EXPIRATION_DATE', '+1 month');
+Once this is in place, you are ready to generate a new download key. To do this, you will need to use the password you set in the variables file. By default, that is `1234` (it is suggested to change it as soon as you setup).
 
-Once this is in place, you are ready to generate a new download key. To do this, you will need to use the password you set in the variables file. In the example above, that is `1234`
+Navigate to `yoursite.com/yourfolder/generate.php?pw=1234&num=3&path=/secret/file&expire=2016-06-30%2012:00:00&key_amount=20`, where pw is your password previously set, num is the number of downloads available to these keys (if you omit it that's 1 by default), path is where to find the file to download (from yourfolder), expire is the expiration date (if you omit it the system will use the EXPIRATION_DATE variable in `variables.php`) and key_amount is the number of keys to add with these settings (if you omit it that's 1 by default).
 
-Navigate to `example.com/singleuse/generate.php?1234` (Notice the `?1234` a the end — that is your password)
-
-Copy the link that is generated and send it off. Voila! Done.
+Copy the key that is generated (or download a txt file listing all newly created keys) and send it off. Voila! Done.
